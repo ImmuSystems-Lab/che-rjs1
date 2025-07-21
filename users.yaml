@@ -1,0 +1,64 @@
+---
+- name: Create users and import GitHub public keys
+  hosts: localhost
+  vars:
+    users:
+      # Several IT people / GitHub accounts can be associated with the
+      # single ssoelocal user, therefore the github key is a list.
+      - comment: SSoE IT
+        name: ssoelocal
+        github:
+          - banaya7       # Brandon Anaya
+      # Arrange lab members in alphabetical order.
+      - comment: Jason Shoemaker
+        name: jas518
+        github:
+          - jshoe1984
+      - comment: Lauren Nichols
+        name: lan120
+        github:
+          - laurenmnichols
+      - comment: Pariksheet Nanda
+        name: pan79
+        github:
+          - omsai
+      - comment: Ramakrishna Suresh
+        name: ras365
+        github: []              # We still need Rama's GitHub account.
+      - comment: Tatum Liparulo
+        name: tam193
+        github:
+          - tam193
+
+  tasks:
+    - name: Create home directory
+      become: true
+      ansible.builtin.user:
+        name: |-
+          {{ item.name }}
+        comment: |-
+          {{ item.comment }}
+        generate_ssh_key: true
+        groups:
+          # Need to check if these are all necessary on Ubuntu Server;
+          # they are set in the container, but the server defaults may
+          # be different.
+          - adm
+          - sudo
+          - dialout
+          - dip
+          - cdrom
+          - floppy
+          - plugdev
+          - audio
+          - video
+      loop: |
+        {{ users }}
+
+    # - name: Download GitHub public keys
+    #   uri:
+    #     url: "https://api.github.com/{{ item.github }}.keys"
+    #     return_content: yes
+    #   loop: |
+    #     {{ users }}
+    #   register: keys

@@ -71,4 +71,6 @@ ansible-playbook network.yaml
 # Install packages used by this playbook.
 sudo apt -y install cloud-init openssh-server
 ansible-playbook ssh.yaml
+
+ansible-playbook users.yaml
 ```
