@@ -1,0 +1,18 @@
+---
+- name: Setup DHCP on ethernet interface(s)
+  hosts: localhost
+
+  tasks:
+    - name: List ethernet interfaces
+      ansible.builtin.set_fact:
+        eths: |
+          {{
+              lookup(*(["vars"] +
+                       ansible_facts.interfaces |
+                       map("regex_replace", "^(.+)$", "ansible_\1"))) |
+              community.general.json_query("[?type=='ether'].device")
+          }}
+
+    - name: Print ethernet interfaces
+      ansible.builtin.debug:
+        var: eths
