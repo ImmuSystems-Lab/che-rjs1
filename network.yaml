@@ -32,7 +32,5 @@
     - name: Apply netplan
       become: true
       ansible.builtin.command: netplan apply --debug
-      # Silence ansible-lint warning of not creating a file, etc.
-      changed_when: true
       # The systemctl command will fail in a non-podman container.
       failed_when: ansible_virtualization_type != "docker"
