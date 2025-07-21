@@ -45,8 +45,14 @@ Then inside the container:
 
 ```shell
 apt -y update
-apt -y install ansible
+apt -y install ansible netplan.io sudo
+gpasswd -a ubuntu sudo
+echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+echo "127.0.0.1 $(cat /etc/hostname)" >> /etc/hosts
 su - ubuntu
 cd che-rjs1/
+# Reset `sudo` timeout for select commands in playbook(s) that require
+# root privilege escalation.
+sudo true
 ansible-playbook network.yaml	# or whatever playbook interests you.
 ```

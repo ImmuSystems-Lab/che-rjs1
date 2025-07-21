@@ -1,0 +1,8 @@
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+{% for eth in eths %}
+    {{ eth }}:
+      dhcp4: true
+{% endfor %}

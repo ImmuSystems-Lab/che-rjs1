@@ -16,3 +16,23 @@
     - name: Print ethernet interfaces
       ansible.builtin.debug:
         var: eths
+
+    - name: Create the netplan file
+      # See
+      # https://documentation.ubuntu.com/server/explanation/networking/configuring-networks/#dynamic-ip-address-assignment-dhcp-client
+      become: true
+      ansible.builtin.template:
+        src: templates/99_config.yaml.j2
+        dest: /etc/netplan/99_config.yaml
+        mode: "0700"
+      notify: Apply netplan
+
+  handlers:
+
+    - name: Apply netplan
+      become: true
+      ansible.builtin.command: netplan apply --debug
+      # Silence ansible-lint warning of not creating a file, etc.
+      changed_when: true
+      # The systemctl command will fail in a non-podman container.
+      failed_when: ansible_virtualization_type != "docker"
