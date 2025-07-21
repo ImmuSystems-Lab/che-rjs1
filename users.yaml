@@ -40,18 +40,13 @@
           {{ item.comment }}
         generate_ssh_key: true
         groups:
-          # Need to check if these are all necessary on Ubuntu Server;
-          # they are set in the container, but the server defaults may
-          # be different.
+          # Server default groups.
           - adm
           - sudo
-          - dialout
           - dip
           - cdrom
-          - floppy
           - plugdev
-          - audio
-          - video
+          - lxd
       loop: |
         {{ users }}
 
