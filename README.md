@@ -45,15 +45,30 @@ Then inside the container:
 
 ```shell
 apt -y update
-apt -y install ansible cloud-init openssh-server netplan.io sudo
+apt -y install ansible sudo
 gpasswd -a ubuntu sudo
 echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 echo "127.0.0.1 $(cat /etc/hostname)" >> /etc/hosts
 su - ubuntu
 cd che-rjs1/
-# Reset `sudo` timeout for select commands in playbook(s) that require
-# root privilege escalation.
+# Reset `sudo` timeout for select commands in ansible-playbook(s) that
+# require root privilege escalation.
 sudo true
-ansible-playbook network.yaml   # or whatever playbook(s) interest you.
-ansible-playbook ssh.yaml       # or whatever playbook(s) interest you.
+
+# Run whatever playbooks interest you below.
+
+# Install packages used by this playbook.
+sudo apt -y install grub2-common linux-generic
+sudo cp -a /usr/share/grub/default/grub /etc/default/grub
+sudo mkdir -p /boot/grub
+sudo update-grub
+ansible-playbook grub.yaml
+
+# Install packages used by this playbook.
+sudo apt -y install netplan.io
+ansible-playbook network.yaml
+
+# Install packages used by this playbook.
+sudo apt -y install cloud-init openssh-server
+ansible-playbook ssh.yaml
 ```

@@ -1,0 +1,35 @@
+---
+- name: Install memtest86+ and enable boot menu
+  hosts: localhost
+
+  tasks:
+    - name: Install memtest86+
+      become: true
+      ansible.builtin.apt:
+        name: memtest86+
+      # The package is not listed in the container.
+      failed_when: ansible_virtualization_type != "docker"
+
+    - name: Adjust boot menu timeout
+      become: true
+      ansible.builtin.replace:
+        path: /etc/default/grub
+        regexp: |
+          {{ item.regexp }}
+        replace: |
+          {{ item.replace }}
+      loop:
+        - regexp: |
+            ^GRUB_TIMEOUT_STYLE=hidden.*
+          replace: |
+            #GRUB_TIMEOUT_STYLE=hidden
+        - regexp: |
+            ^GRUB_TIMEOUT=.*
+          replace: |
+            GRUB_TIMEOUT=5
+      notify: Update grub.cfg
+
+  handlers:
+    - name: Update grub.cfg
+      become: true
+      ansible.builtin.command: update-grub
