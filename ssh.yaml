@@ -1,0 +1,44 @@
+---
+- name: Disable SSH password authentication
+  hosts: localhost
+  vars:
+    file_cloud_init: /etc/ssh/sshd_config.d/50-cloud-init.conf
+
+  tasks:
+    - name: Disable password in main sshd config
+      become: true
+      ansible.builtin.replace:
+        path: /etc/ssh/sshd_config
+        regexp: |
+          .*PasswordAuthentication yes.*
+        replace: |
+          PasswordAuthentication no
+      notify: Reload sshd
+
+    - name: Check if cloud-init config is present
+      ansible.builtin.stat:
+        path: |
+          {{ file_cloud_init }}
+      register: st
+
+    - name: Disable password in cloud-init config
+      become: true
+      ansible.builtin.replace:
+        path: |
+          {{ file_cloud_init }}
+        regexp: |
+          .*PasswordAuthentication yes.*
+        replace: |
+          PasswordAuthentication no
+      when: st.stat.exists
+      notify: Reload sshd
+
+  handlers:
+
+    - name: Reload sshd
+      become: true
+      ansible.builtin.systemd:
+        name: ssh
+        state: reloaded
+      # The systemctl command will fail in a non-podman container.
+      failed_when: ansible_virtualization_type != "docker"
