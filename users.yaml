@@ -50,6 +50,16 @@
       loop: |
         {{ users }}
 
+    - name: Flatten list for merging GitHub keys
+      ansible.builtin.set_fact:
+        name_github: |
+          {{
+              users |
+              community.general.json_query("[:].name") |
+              flatten2d(users |
+                        community.general.json_query("[:].github"))
+          }}
+
     # - name: Download GitHub public keys
     #   uri:
     #     url: "https://api.github.com/{{ item.github }}.keys"
