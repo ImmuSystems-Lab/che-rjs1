@@ -1,0 +1,11 @@
+---
+- name: Install system software
+  hosts: localhost
+
+  tasks:
+    - name: Install system software
+      become: true
+      ansible.builtin.apt:
+        pkg:
+          - build-essential
+          - gfortran
