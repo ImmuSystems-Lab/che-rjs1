@@ -3,6 +3,33 @@
 Although Ansible is often used to configure several machines, these
 playbooks here apply to a single research lab Ubuntu Server.
 
+## Setup
+
+1. Clone this repository
+
+    ```shell
+    git clone https://github.com/ImmuSystems-Lab/che-rjs1
+    cd che-rjs1/
+    ```
+
+2. Install ansible with jmespath if not already in your PATH:
+
+    ```shell
+	pipx ensurepath
+    pipx install --include-deps ansible
+    pipx inject anisble --include-deps jmespath
+    ```
+
+3. Run one or more playbooks from this directory:
+
+    ```shell
+    # Allow root-privilege for select commands in the playbook.
+    sudo true
+
+    # Run the playbook
+    ansible-playbook users.yaml
+    ```
+
 ## Using the container sandbox for testing
 
 You can test the playbooks using a container.  Canonical does not have
