@@ -64,36 +64,12 @@
       ansible.builtin.debug:
         var: name_github
 
-    - name: Download GitHub public keys
-      ansible.builtin.uri:
-        url: "https://github.com/{{ item[1] }}.keys"
-        return_content: true
+    - name: Import GitHub public keys
+      become: true
+      ansible.posix.authorized_key:
+        user: |-
+          {{ item[0] }}
+        key: |-
+          https://github.com/{{ item[1] }}.keys
       loop: |
         {{ name_github }}
-      register: uri_keys
-
-    - name: Flatten list for merging key lines.
-      ansible.builtin.set_fact:
-        name_key: |
-          {{
-              uri_keys |
-              community.general.json_query(
-                "results[?content_length!='0'].item[0]") |
-              flatten2d(key_list)
-          }}
-      vars:
-        key_list: |-
-          {%- set keys = [] -%}
-          {%- for key in uri_keys |
-                         community.general.json_query(
-                           "results[?content_length!='0'].content") -%}
-          {{ keys.append(key |
-                         regex_replace("\n$", '') |
-                         regex_replace('\n', '|') |
-                         split('|')) }}
-          {%- endfor -%}
-          {{ keys }}
-
-    - name: Show user-key pairs
-      ansible.builtin.debug:
-        var: name_key
