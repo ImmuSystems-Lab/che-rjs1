@@ -8,4 +8,9 @@
       ansible.builtin.apt:
         pkg:
           - build-essential
+          - emacs-nox
           - gfortran
+          - parallel
+          - patchelf
+          - pax-utils
+          - stow
