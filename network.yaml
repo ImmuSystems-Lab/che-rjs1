@@ -33,4 +33,4 @@
       become: true
       ansible.builtin.command: netplan apply --debug
       # The systemctl command will fail in a non-podman container.
-      failed_when: ansible_virtualization_type != "docker"
+      when: ansible_virtualization_type != "docker"

@@ -8,7 +8,7 @@
       ansible.builtin.apt:
         name: memtest86+
       # The package is not listed in the container.
-      failed_when: ansible_virtualization_type != "docker"
+      when: ansible_virtualization_type != "docker"
 
     - name: Adjust boot menu timeout
       become: true
