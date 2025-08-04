@@ -47,6 +47,7 @@
           - cdrom
           - plugdev
           - lxd
+        shell: /bin/bash
       loop: |
         {{ users }}
 
