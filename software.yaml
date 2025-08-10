@@ -8,9 +8,12 @@
       ansible.builtin.apt:
         pkg:
           - build-essential
+          - datamash
           - emacs-nox
           - gfortran
+          - libtree
           - parallel
           - patchelf
-          - pax-utils
           - stow
+          - unzip
+          - zip
