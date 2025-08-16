@@ -12,7 +12,8 @@
               lookup(*(["vars"] +
                        ansible_facts.interfaces |
                        map("regex_replace", "^(.+)$", "ansible_\1"))) |
-              community.general.json_query("[?type=='ether'].device")
+              community.general.json_query("[?type=='ether'].device") |
+              sort
           }}
 
     - name: Print ethernet interfaces
