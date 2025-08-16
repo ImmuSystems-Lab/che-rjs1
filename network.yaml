@@ -1,6 +1,8 @@
 ---
-- name: Setup DHCP on ethernet interface(s)
+- name: Setup DHCP on ethernet interface(s) and timedatectl timezone
   hosts: localhost
+  vars:
+    timezone: America/New_York
 
   tasks:
     - name: List ethernet interfaces
@@ -27,6 +29,14 @@
         mode: "0700"
       notify: Apply netplan
 
+    - name: Set timezone
+      become: true
+      community.general.timezone:
+        name: |-
+          {{ timezone }}
+        hwclock: UTC
+      notify: Restart cron
+
   handlers:
 
     - name: Apply netplan
@@ -34,3 +44,9 @@
       ansible.builtin.command: netplan apply --debug
       # The systemctl command will fail in a non-podman container.
       when: ansible_virtualization_type != "docker"
+
+    - name: Restart cron
+      become: true
+      ansible.builtin.systemd:
+        name: cron
+        state: restarted
