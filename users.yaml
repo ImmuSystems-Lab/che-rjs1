@@ -7,8 +7,7 @@
       # single ssoelocal user, therefore the github key is a list.
       - comment: SSoE IT
         name: ssoelocal
-        github:
-          - banaya7       # Brandon Anaya
+        github: []
       # Arrange lab members in alphabetical order.
       - comment: Jason Shoemaker
         name: jas518
@@ -24,7 +23,8 @@
           - omsai
       - comment: Ramakrishna Suresh
         name: ras365
-        github: []              # We still need Rama's GitHub account.
+        github:
+          - Salty-Ramen
       - comment: Tatum Liparulo
         name: tam193
         github:
