@@ -1,0 +1,108 @@
+---
+- name: Install Nvidia drivers and toolkit for Tesla P100 16GB
+  hosts: localhost
+  vars:
+    driver_ver: 580.159.04
+    driver_file_repo: nvidia-driver-local-repo-ubuntu2404-{{ driver_ver }}_1.0-1_amd64.deb
+    driver_key: nvidia-driver-local-7877A0F4-keyring.gpg
+    toolkit_file_repo: cuda-repo-ubuntu2404-13-0-local_13.0.0-580.65.06-1_amd64.deb
+    toolkit_key: cuda-BFD0EC79-keyring.gpg
+
+  tasks:
+    # cat /usr/share/doc/nvidia-driver/supported-gpus.json | jq '.[][] | select(.name | contains("Tesla P100"))'
+    #
+    # Go to https://www.nvidia.com/en-us/drivers/
+    # Manual Driver Search with the following:
+    # - Data Center / Tesla
+    # - P-Series
+    # - Tesla P100
+    # - Linux 64-bit Ubuntu 24.04
+    # - Any CUDA Toolkit version
+    # - English (US)
+    # Returns this result:
+    # https://www.nvidia.com/en-us/drivers/details/270479/
+    - name: Cache local repository package for cuda-drivers
+      become: true
+      ansible.builtin.get_url:
+        mode: "0644"
+        url: >-
+          https://us.download.nvidia.com/tesla/{{ driver_ver }}/{{ driver_file_repo }}
+        dest: >-
+          /var/tmp/{{ driver_file_repo }}
+
+    - name: Install local repository for cuda-drivers
+      become: true
+      ansible.builtin.apt:
+        deb: >-
+          /var/tmp/{{ driver_file_repo }}
+      register: repo_driver
+
+    - name: Copy the cuda-driver GPG public key
+      become: true
+      ansible.builtin.copy:
+        mode: "0644"
+        src: >-
+          /var/nvidia-driver-local-repo-ubuntu2404-{{ driver_ver }}/{{ driver_key }}
+        dest: >-
+          /usr/share/keyrings/{{ driver_key }}
+
+    - name: Install cuda-drivers
+      become: true
+      ansible.builtin.apt:
+        name:
+          - cuda-drivers-580
+        update_cache: >-
+          {{ repo_driver.changed }}
+
+    # See https://developer.nvidia.com/cuda-13-0-0-download-archive?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=24.04&target_type=deb_local
+    - name: Download the cuda-toolkit repository pin
+      become: true
+      ansible.builtin.get_url:
+        mode: "0644"
+        url: >-
+          https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-ubuntu2404.pin
+        dest: /etc/apt/preferences.d/cuda-repository-pin-600
+
+    - name: Cache local repository package for cuda-toolkit
+      become: true
+      ansible.builtin.get_url:
+        mode: "0644"
+        url: >-
+          https://developer.download.nvidia.com/compute/cuda/13.0.0/local_installers/{{ toolkit_file_repo }}
+        dest: >-
+          /var/tmp/{{ toolkit_file_repo }}
+
+    - name: Install local repository for cuda-toolkit
+      become: true
+      ansible.builtin.apt:
+        deb: >-
+          /var/tmp/{{ toolkit_file_repo }}
+      register: repo_toolkit
+
+    - name: Copy the cuda-tookit GPG public key
+      become: true
+      ansible.builtin.copy:
+        mode: "0644"
+        src: >-
+          /var/cuda-repo-ubuntu2404-13-0-local/{{ toolkit_key }}
+        dest: >-
+          /usr/share/keyrings/{{ toolkit_key }}
+
+    - name: Install cuda-toolkit
+      become: true
+      ansible.builtin.apt:
+        name:
+          - cuda-toolkit
+        update_cache: >-
+          {{ repo_toolkit.changed }}
+
+    - name: Add local cuda bin to the PATH
+      become: true
+      ansible.builtin.template:
+        mode: "0644"
+        src: >-
+          templates/cuda.sh.j2
+        dest: >-
+          /etc/profile.d/cuda.sh
+        validate:
+          bash -n %s
