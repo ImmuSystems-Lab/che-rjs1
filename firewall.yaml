@@ -1,0 +1,15 @@
+---
+- name: Set firewall rules
+  hosts: localhost
+
+  tasks:
+    - name: Allow ssh
+      become: true
+      community.general.ufw:
+        rule: allow
+        name: OpenSSH
+
+    - name: Enable firewall
+      become: true
+      community.general.ufw:
+        state: enabled
