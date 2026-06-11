@@ -1,0 +1,55 @@
+---
+- name: Install local GitLab Runner for podman-based CI
+  hosts: localhost
+  vars:
+    key_url: https://packages.gitlab.com/gpgkey/gpg.key
+    key: /etc/apt/trusted.gpg.d/gitlab-runner.gpg
+    mirror: https://packages.gitlab.com/runner/gitlab-runner/ubuntu
+    distro: noble
+
+  tasks:
+    - name: Fetch key
+      become: true
+      ansible.builtin.get_url:
+        mode: "0644"
+        url: >-
+          {{ key_url }}
+        dest: >-
+          {{ key }}.armored
+
+    # Convert ASCII key to binary as explained in
+    # https://www.digitalocean.com/community/tutorials/how-to-handle-apt-key-and-add-apt-repository-deprecation-using-gpg-to-add-external-repositories-on-ubuntu-22-04
+    - name: Dearmor key
+      become: true
+      ansible.builtin.shell:
+        executable: /bin/bash
+        cmd: |
+          set -o pipefail
+          cat {{ key }}.armored | gpg --dearmor > {{ key }}
+        creates: >-
+          {{ key }}
+
+    # https://packages.gitlab.com/install/repositories/runner/gitlab-runner/ubuntu/noble/config_file.list
+    - name: Add repository
+      become: true
+      ansible.builtin.deb822_repository:
+        name: gitlab-runner
+        types:
+          - deb
+          - deb-src
+        uris: >-
+          {{ mirror }}
+        components: main
+        suites: >-
+          {{ distro }}
+        allow_insecure: false
+        signed_by: >-
+          {{ key }}
+      register: repo
+
+    - name: Install package
+      become: true
+      ansible.builtin.apt:
+        name:
+          - gitlab-runner
+        update_cache: true
